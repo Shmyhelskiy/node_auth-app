@@ -5,9 +5,10 @@ export const User = client.define(
   'User',
   {
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       primaryKey: true,
-      defaultValue: DataTypes.UUIDV4,
+      autoIncrement: true,
+      allowNull: false
     },
     email: {
       type: DataTypes.STRING,
