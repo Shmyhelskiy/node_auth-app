@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../models/users.js';
-import { AppiError } from '../exeptions/api.errors.js';
+import { ApiError  } from '../exeptions/api.errors.js';
 import { emailService } from '../services/email.service.js';
 
 async function getAllActivated() {
@@ -27,7 +27,7 @@ async function register(email, password, name) {
   const existUser = await findByEmail(email);
 
   if (existUser) {
-    throw AppiError.badRequest('User already exist', {
+    throw ApiError.badRequest('User already exist', {
       email: 'User already exist',
     });
   }
@@ -47,7 +47,7 @@ async function activate(activationToken) {
   const user = await User.findOne({ where: { activationToken } });
 
   if (!user) {
-    throw AppiError.notFound()
+    throw ApiError.notFound()
   }
 
   user.activationToken = null;

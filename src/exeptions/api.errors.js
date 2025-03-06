@@ -1,4 +1,4 @@
-export class AppiError extends Error {
+export class ApiError  extends Error {
   constructor({ message, status, errors = {} }) {
     super(message);
 

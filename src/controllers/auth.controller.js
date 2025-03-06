@@ -1,8 +1,8 @@
 import { userService } from '../services/user.service.js';
 import { tokenService } from '../services/token.service.js';
 import { jwtService } from '../services/jwt.service.js';
-import { AppiError } from '../exeptions/api.errors.js';
-import bcript from 'bcrypt';
+import { ApiError  } from '../exeptions/api.errors.js';
+import bcrypt  from 'bcrypt';
 
 const validateEmail = (value) => {
   if (!value) {
@@ -58,7 +58,7 @@ const register = async (req, res) => {
   };
 
   if (errors.email || errors.password) {
-    throw AppiError.badRequest('Bad request', errors);
+    throw ApiError.badRequest('Bad request', errors);
   }
   const hashedPass = await bcript.hash(password, 10);
   await userService.register(email, hashedPass, name);
@@ -80,13 +80,13 @@ const login = async (req, res) => {
   const user = await userService.findByEmail(email);
 
   if (!user) {
-    throw AppiError.badRequest('No such user');
+    throw ApiError.badRequest('No such user');
   }
 
   const isPasswordVlid = await bcript.compare(password, user.password);
 
   if (!isPasswordVlid) {
-    throw AppiError.badRequest('Wrong password');
+    throw ApiError.badRequest('Wrong password');
   }
 
   generateToken(res, user);
@@ -101,7 +101,7 @@ const refresh = async (req, res) => {
   const token = await tokenService.getByToken(refreshToken);
 
   if (!userData || !token) {
-    throw AppiError.unauthorized();
+    throw ApiError.unauthorized();
   }
 
   const user = userService.findByEmail(userData.email)
@@ -114,7 +114,7 @@ const logout = async (req, res) => {
   const userData = jwtService.verifyRefresh(refreshToken);
 
   if (!userData || !token) {
-    throw AppiError.unauthorized();
+    throw ApiError.unauthorized();
   }
 
   await tokenService.remove(userData.id)
@@ -140,19 +140,19 @@ const profile = async (req, res) => {
   const userData = jwtService.verifyRefresh(refreshToken);
 
   if (!userData || !refreshToken) {
-    throw AppiError.unauthorized();
+    throw ApiError.unauthorized();
   }
 
   const user = userService.findByEmail(userData.email)
 
   if (!user) {
-    throw AppiError.badRequest('No such user');
+    throw ApiError.badRequest('No such user');
   }
 
-    const isPasswordVlid = await bcript.compare(password, user.password);
+    const isPasswordVlid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordVlid) {
-      throw AppiError.badRequest('Wrong password');
+      throw ApiError.badRequest('Wrong password');
     }
 
   if (name) {
@@ -166,7 +166,7 @@ const profile = async (req, res) => {
         .send({ message: 'New password and confirmation do not match' });
     }
 
-    const hashedPass = await bcript.hash(newPassword, 10);
+    const hashedPass = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPass;
   }
