@@ -5,18 +5,8 @@ import { User } from './users.js';
 export const Token = client.define(
   'token',
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-    },
     refreshToken: {
       type: DataTypes.STRING,
-      allowNull: false,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
       allowNull: false,
     },
   },

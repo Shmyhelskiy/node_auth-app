@@ -32,7 +32,20 @@ function sendActivationEmail(email, token ) {
   });
 }
 
+const sendNewEmail = (email) => {
+  const html = `
+    <h1>Email has been changed</h1>
+  `;
+
+  return send({
+    email,
+    html,
+    subject: 'Your email has been changed',
+  });
+};
+
 export const emailService = {
   send,
-  sendActivationEmail
+  sendActivationEmail,
+  sendNewEmail
 }

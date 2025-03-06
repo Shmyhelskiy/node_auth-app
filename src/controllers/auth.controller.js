@@ -39,8 +39,8 @@ const generateToken = async (res, user) => {
   await tokenService.save(normalizedUser.id, refreshToken);
 
   res.cookie('refreshToken', refreshToken, {
+    HttpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
   });
 
   res.send({
@@ -48,8 +48,6 @@ const generateToken = async (res, user) => {
     accessToken,
   });
 };
-
-
 
 const register = async (req, res) => {
   const { email, password, name } = req.body;
@@ -92,19 +90,102 @@ const login = async (req, res) => {
   }
 
   generateToken(res, user);
+
+  res.redirect('/profile');
 };
 
 const refresh = async (req, res) => {
   const { refreshToken } = req.cookies;
 
-  const user = jwtService.verifyRefresh(refreshToken);
+  const userData = jwtService.verifyRefresh(refreshToken);
   const token = await tokenService.getByToken(refreshToken);
 
-  if (!user || !token) {
+  if (!userData || !token) {
     throw AppiError.unauthorized();
   }
 
+  const user = userService.findByEmail(userData.email)
+
   generateToken(res, user);
+};
+
+const logout = async (req, res) => {
+  const { refreshToken } = req.cookies;
+  const userData = jwtService.verifyRefresh(refreshToken);
+
+  if (!userData || !token) {
+    throw AppiError.unauthorized();
+  }
+
+  await tokenService.remove(userData.id)
+
+  res.clearCookie('refreshToken');
+
+  res.redirect('/login');
+}
+
+const profile = async (req, res) => {
+  const { name, email, password, newPassword, confirmation } = req.body;
+
+  await Schemas.profileUserSchema.validateAsync({
+    name,
+    email,
+    password,
+    newPassword,
+    confirmation,
+  });
+
+  const { refreshToken } = req.cookies;
+
+  const userData = jwtService.verifyRefresh(refreshToken);
+
+  if (!userData || !refreshToken) {
+    throw AppiError.unauthorized();
+  }
+
+  const user = userService.findByEmail(userData.email)
+
+  if (!user) {
+    throw AppiError.badRequest('No such user');
+  }
+
+    const isPasswordVlid = await bcript.compare(password, user.password);
+
+    if (!isPasswordVlid) {
+      throw AppiError.badRequest('Wrong password');
+    }
+
+  if (name) {
+    user.name = name;
+  }
+
+  if (newPassword && confirmation) {
+    if (newPassword !== confirmation) {
+      return res
+        .status(400)
+        .send({ message: 'New password and confirmation do not match' });
+    }
+
+    const hashedPass = await bcript.hash(newPassword, 10);
+
+    user.password = hashedPass;
+  }
+
+  if (email) {
+    const emailExists = await userService.getByEmail(email);
+
+    if (emailExists) {
+      return res.send({ message: 'User registred' });
+    }
+
+    await emailService.sendNewEmail(user.email);
+
+    user.email = email;
+  }
+
+  await user.save();
+
+  return res.status(200).send({ name: user.name, email: user.email });
 };
 
 export const authController = {
@@ -112,4 +193,6 @@ export const authController = {
   activate,
   login,
   refresh,
+  logout,
+  profile,
 };
