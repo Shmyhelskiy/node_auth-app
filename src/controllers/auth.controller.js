@@ -104,7 +104,7 @@ const refresh = async (req, res) => {
     throw ApiError.unauthorized();
   }
 
-  const user = userService.findByEmail(userData.email)
+  const user = await userService.findByEmail(userData.email)
 
   generateToken(res, user);
 };
@@ -143,7 +143,7 @@ const profile = async (req, res) => {
     throw ApiError.unauthorized();
   }
 
-  const user = userService.findByEmail(userData.email)
+  const user = await userService.findByEmail(userData.email)
 
   if (!user) {
     throw ApiError.badRequest('No such user');
@@ -172,10 +172,10 @@ const profile = async (req, res) => {
   }
 
   if (email) {
-    const emailExists = await userService.getByEmail(email);
+    const emailExists = await userService.findByEmail(email);
 
     if (emailExists) {
-      return res.send({ message: 'User registred' });
+      return res.send({ message: 'User with this email already registred' });
     }
 
     await emailService.sendNewEmail(user.email);

@@ -7,7 +7,7 @@ export class ApiError  extends Error {
   }
 
   static badRequest(message, errors) {
-    return new AppiError({
+    return new ApiError({
       message,
       errors,
       status: 400,
@@ -15,7 +15,7 @@ export class ApiError  extends Error {
   }
 
   static unauthorized(message = 'Unauthorized user', errors) {
-    return new AppiError({
+    return new ApiError({
       message,
       errors,
       status: 401,
@@ -23,7 +23,7 @@ export class ApiError  extends Error {
   }
 
   static notFound(errors) {
-    return new AppiError({
+    return new ApiError({
       message: 'not found',
       errors,
       status: 404,

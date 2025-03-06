@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   res.send('hello');
 });
 
-app.use(errorMiddleware)
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
